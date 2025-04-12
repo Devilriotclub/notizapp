@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Notizen Editor</title>
+  <style>
+    :root {
+      --bg-light: #f4f4f9;
+      --bg-dark: #1e1e1e;
+      --text-light: #333;
+      --text-dark: #e0e0e0;
+      --accent-light: #2a9d8f;
+      --accent-dark: #90caf9;
+      --note-light: #fff;
+      --note-dark: #2c2c2c;
+      --button-light: #f76c6c;
+      --button-dark: #e55a5a;
+    }
+
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 20px;
+      background-color: var(--bg-light);
+      color: var(--text-light);
+      transition: background-color 0.3s, color 0.3s;
+    }
+
+    body.dark {
+      background-color: var(--bg-dark);
+      color: var(--text-dark);
+    }
+
+    h1 {
+      text-align: center;
+      color: var(--accent-light);
+    }
+
+    #note-container {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      justify-content: center;
+    }
+
+    .note {
+      background-color: var(--note-light);
+      border-radius: 8px;
+      padding: 15px;
+      width: 250px;
+      box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+      position: relative;
+      transition: background-color 0.3s;
+    }
+
+    body.dark .note {
+      background-color: var(--note-dark);
+    }
+
+    .note textarea {
+      width: 100%;
+      height: 100px;
+      border: 1px solid #ccc;
+      border-radius: 6px;
+      padding: 10px;
+      font-size: 14px;
+      resize: none;
+      background-color: var(--note-light);
+      color: var(--text-light);
+    }
+
+    body.dark .note textarea {
+      background-color: var(--note-dark);
+      color: var(--text-dark);
+    }
+
+    .note button {
+      background-color: var(--button-light);
+      color: white;
+      border: none;
+      padding: 8px 12px;
+      border-radius: 5px;
+      position: absolute;
+      bottom: 10px;
+      right: 10px;
+      cursor: pointer;
+    }
+
+    body.dark .note button {
+      background-color: var(--button-dark);
+    }
+
+    .note button:hover {
+      background-color: #e55a5a;
+    }
+
+    .add-note-button {
+      display: block;
+      margin: 20px auto;
+      background-color: var(--accent-light);
+      color: white;
+      border: none;
+      padding: 10px 20px;
+      border-radius: 5px;
+      font-size: 16px;
+      cursor: pointer;
+    }
+
+    body.dark .add-note-button {
+      background-color: var(--accent-dark);
+    }
+
+    .add-note-button:hover {
+      background-color: #21867a;
+    }
+
+    .dark-mode-toggle {
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      background-color: none;
+      color: var(--accent-light);
+      border: 2px solid var(--accent-light);
+      padding: 10px;
+      border-radius: 50%;
+      cursor: pointer;
+    }
+
+    body.dark .dark-mode-toggle {
+      border-color: var(--accent-dark);
+      color: var(--accent-dark);
+    }
+  </style>
+</head>
+<body>
+  <button class="dark-mode-toggle" onclick="toggleDarkMode()">🌙</button>
+  <h1>Notizen Editor</h1>
+  <button class="add-note-button" onclick="addNote()">Neue Notiz hinzufügen</button>
+  <div id="note-container"></div>
+
+  <script>
+    let notes = JSON.parse(localStorage.getItem("notes")) || [];
+
+    function renderNotes() {
+      const noteContainer = document.getElementById("note-container");
+      noteContainer.innerHTML = '';
+
+      notes.forEach((note, index) => {
+        const noteElement = document.createElement("div");
+        noteElement.classList.add("note");
+        
+        const textarea = document.createElement("textarea");
+        textarea.value = note.text;
+        textarea.addEventListener("input", (e) => {
+          note.text = e.target.value;
+          saveNotes();
+        });
+
+        const deleteButton = document.createElement("button");
+        deleteButton.textContent = "Löschen";
+        deleteButton.onclick = () => {
+          notes.splice(index, 1);
+          saveNotes();
+          renderNotes();
+        };
+
+        noteElement.appendChild(textarea);
+        noteElement.appendChild(deleteButton);
+        noteContainer.appendChild(noteElement);
+      });
+    }
+
+    function saveNotes() {
+      localStorage.setItem("notes", JSON.stringify(notes));
+    }
+
+    function addNote() {
+      notes.push({ text: "" });
+      saveNotes();
+      renderNotes();
+    }
+
+    function toggleDarkMode() {
+      document.body.classList.toggle("dark");
+      const isDark = document.body.classList.contains("dark");
+      localStorage.setItem("darkmode", isDark);
+      document.querySelector(".dark-mode-toggle").textContent = isDark ? "🌞" : "🌙";
+    }
+
+    // Beim Laden der Seite den Dark Mode aktivieren, falls er gespeichert ist
+    const prefersDark = localStorage.getItem("darkmode") === "true";
+    if (prefersDark) {
+      document.body.classList.add("dark");
+      document.querySelector(".dark-mode-toggle").textContent = "🌞";
+    }
+
+    renderNotes();
+  </script>
+</body>
+</html>
